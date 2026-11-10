@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Absensi SPPG</title>
+<style>
+  :root{
+    --hijau:#0f766e; --hijau-tua:#115e59; --hijau-muda:#ccfbf1;
+    --teks:#0f172a; --abu:#64748b; --garis:#e2e8f0; --bg:#f1f5f9;
+    --merah:#b91c1c; --merah-muda:#fee2e2; --biru-muda:#e0f2fe; --biru:#0369a1;
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  html,body{margin:0;min-height:100%;-webkit-text-size-adjust:100%}
+  body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--teks);background:var(--bg)}
+  body.kunci{overflow:hidden}
+  .layar{min-height:100vh;min-height:100dvh}
+  .meta{color:var(--abu);font-size:.85rem}
+
+  .tengah{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:24px}
+  .spin{display:inline-block;width:34px;height:34px;border:4px solid var(--hijau-muda);border-top-color:var(--hijau);border-radius:50%;animation:putar .8s linear infinite}
+  @keyframes putar{to{transform:rotate(360deg)}}
+
+  /* Login */
+  #login{display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(160deg,#0f766e 0%,#115e59 55%,#134e4a 100%)}
+  .kartu-login{width:100%;max-width:400px;background:#fff;border-radius:20px;padding:28px 24px;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+  .logo{width:60px;height:60px;border-radius:16px;background:var(--hijau-muda);color:var(--hijau);display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+  h1{font-size:1.35rem;margin:0 0 4px;text-align:center}
+  .sub{font-size:.85rem;color:var(--abu);text-align:center;margin:0 0 22px;line-height:1.4}
+  label{display:block;font-size:.82rem;font-weight:600;margin:14px 0 6px}
+  .kolom{position:relative}
+  input,select,textarea{width:100%;font-size:16px;padding:13px 14px;border:1.5px solid var(--garis);border-radius:12px;background:#f8fafc;color:var(--teks);outline:none;transition:border-color .15s, box-shadow .15s;font-family:inherit}
+  textarea{font-family:ui-monospace,Menlo,Consolas,monospace;resize:vertical;line-height:1.5}
+  input:focus,select:focus,textarea:focus{border-color:var(--hijau);box-shadow:0 0 0 3px rgba(15,118,110,.15);background:#fff}
+  #inId{text-transform:uppercase}
+  .mata{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--abu);padding:8px 10px;font-size:.78rem;font-weight:600;cursor:pointer}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;border:0;border-radius:12px;padding:14px;font-size:1rem;font-weight:600;cursor:pointer;color:#fff;background:var(--hijau);transition:background .15s, transform .05s;font-family:inherit}
+  .btn:hover{background:var(--hijau-tua)}
+  .btn:active{transform:scale(.99)}
+  .btn.kecil{width:auto;padding:9px 14px;font-size:.85rem}
+  .btn.garis{background:#fff;color:var(--teks);border:1.5px solid var(--garis)}
+  .btn.garis:hover{background:#f8fafc}
+  .btn.bahaya{background:var(--merah)}
+  .btn.bahaya:hover{background:#991b1b}
+  .btn.aksi{min-height:68px;font-size:1.05rem}
+  .btn.pulang{background:#b45309}
+  .btn.pulang:hover{background:#92400e}
+  .btn:disabled,.btn.pulang:disabled,.btn.garis:disabled{background:#cbd5e1;color:#fff;border-color:#cbd5e1;cursor:not-allowed}
+  .btn .spin{width:18px;height:18px;border-width:3px;border-color:rgba(255,255,255,.4);border-top-color:#fff}
+  .btn.garis .spin{border-color:var(--garis);border-top-color:var(--hijau)}
+  #btnMasuk{margin-top:20px}
+  .link{background:none;border:0;color:var(--hijau);font-weight:600;font-size:.85rem;padding:6px 0;cursor:pointer;font-family:inherit}
+  .pesan{margin-top:14px;padding:10px 12px;border-radius:10px;font-size:.85rem;line-height:1.4}
+  .pesan.galat{background:var(--merah-muda);color:var(--merah)}
+  .pesan.info{background:var(--biru-muda);color:var(--biru)}
+
+  /* Aplikasi */
+  .bar{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top));background:var(--hijau);color:#fff}
+  .merek{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1rem}
+  .merek small{display:block;font-weight:400;font-size:.72rem;opacity:.85}
+  .bar .btn.garis{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.35)}
+  .bar .btn.garis:hover{background:rgba(255,255,255,.22)}
+  main{max-width:720px;margin:0 auto;padding:16px;padding-bottom:calc(32px + env(safe-area-inset-bottom));display:grid;gap:14px}
+  .kartu{background:#fff;border-radius:16px;padding:18px;box-shadow:0 1px 3px rgba(15,23,42,.08)}
+  .judul{font-size:.8rem;font-weight:700;color:var(--abu);text-transform:uppercase;letter-spacing:.05em;margin:0 0 10px}
+  .judulbaris{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+  .judulbaris .judul{margin:0}
+  .catatan{font-size:.82rem;color:var(--abu);margin:10px 0 0;line-height:1.45}
+  .baris2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+  .profil{display:flex;align-items:center;gap:14px}
+  .profil .isi{flex:1;min-width:0}
+  .avatar{flex:0 0 52px;height:52px;border-radius:50%;background:var(--hijau-muda);color:var(--hijau);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem}
+  .profil h2{margin:0;font-size:1.05rem;line-height:1.25;word-break:break-word}
+  .badge{display:inline-block;margin-top:6px;padding:3px 10px;border-radius:99px;font-size:.72rem;font-weight:700;background:var(--hijau-muda);color:var(--hijau-tua)}
+  .badge.admin{background:#fef3c7;color:#92400e}
+  .badge.nonaktif{background:var(--merah-muda);color:var(--merah)}
+  .jam{text-align:center;padding:22px 18px}
+  #jam{font-size:2.6rem;font-weight:700;letter-spacing:.02em;font-variant-numeric:tabular-nums;line-height:1.1}
+  #tanggal{color:var(--abu);margin-top:6px;font-size:.95rem}
+  .zona{font-size:.72rem;color:var(--abu);margin-top:2px}
+  @media (min-width:700px){#jam{font-size:3.2rem}}
+
+  .pill{display:inline-block;padding:4px 11px;border-radius:99px;font-size:.74rem;font-weight:700;white-space:nowrap;background:#e2e8f0;color:#334155}
+  .pill.hijau{background:#dcfce7;color:#166534}
+  .pill.biru{background:#dbeafe;color:#1d4ed8}
+  .pill.merah{background:var(--merah-muda);color:var(--merah)}
+  .ringkas{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+  .ringkas div{background:#f8fafc;border-radius:12px;padding:10px 12px}
+  .ringkas small{display:block;color:var(--abu);font-size:.72rem;margin-bottom:2px}
+  .ringkas b{font-size:.95rem}
+  .lok{font-size:1.6rem;font-weight:700;margin:2px 0 8px}
+  .rw{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--garis)}
+  .rw:first-child{border-top:0;padding-top:0}
+  .item{display:flex;justify-content:space-between;gap:10px;font-size:.88rem;padding:6px 0}
+  .item span:first-child{color:var(--abu)}
+
+  .kar{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-top:1px solid var(--garis)}
+  .kar-info{min-width:0}
+  .kar-info b{display:block;word-break:break-word}
+  .kar-aksi{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
+
+  /* Dialog */
+  .lapis{position:fixed;inset:0;z-index:30;background:rgba(15,23,42,.6);display:flex;align-items:flex-end;justify-content:center}
+  .dialog{background:#fff;width:100%;max-width:520px;max-height:96vh;max-height:96dvh;border-radius:20px 20px 0 0;display:flex;flex-direction:column;overflow:hidden}
+  @media (min-width:600px){.lapis{align-items:center}.dialog{border-radius:20px}}
+  .dhead{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--garis);font-size:1.02rem}
+  .x{border:0;background:#f1f5f9;border-radius:50%;width:34px;height:34px;font-size:1rem;cursor:pointer;color:var(--abu)}
+  .dbody{padding:16px;overflow:auto;-webkit-overflow-scrolling:touch}
+  .dfoot{display:flex;flex-wrap:wrap;gap:10px;padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--garis)}
+  .dfoot .btn{flex:1 1 140px;width:auto}
+  .dbody label:first-child{margin-top:0}
+
+  .kamerabox{position:relative;width:100%;height:0;padding-top:75%;background:#0f172a;border-radius:14px;overflow:hidden}
+  .kamerabox video,.kamerabox img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover}
+  .kamerabox video{transform:scaleX(-1)}
+  .kampesan{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:16px;color:#e2e8f0;font-size:.9rem;line-height:1.45}
+  .gpsbox{margin-top:12px;padding:10px 12px;border-radius:12px;background:#f1f5f9;font-size:.85rem;line-height:1.4}
+  .gpsbox.ok{background:#dcfce7;color:#166534}
+  .gpsbox.err{background:var(--merah-muda);color:var(--merah)}
+
+  #toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:#0f172a;color:#fff;padding:11px 16px;border-radius:12px;font-size:.88rem;opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;z-index:50;max-width:90vw;text-align:center}
+  #toast.tampil{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<!-- MEMUAT -->
+<div id="muat" class="layar tengah"><div class="spin"></div><div>Memuat…</div></div>
+
+<!-- GAGAL TERHUBUNG -->
+<div id="galat" class="layar tengah" hidden>
+  <div style="font-size:2rem">📡</div>
+  <div><b>Tidak dapat terhubung ke server</b><br><span class="meta">Periksa sinyal internet Anda. Sesi login Anda tetap aman.</span></div>
+  <button class="btn kecil" id="btnUlang" type="button">Coba Lagi</button>
+</div>
+
+<!-- LOGIN -->
+<div id="login" class="layar" hidden>
+  <form class="kartu-login" id="formLogin" autocomplete="on" novalidate>
+    <div class="logo">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+    </div>
+    <h1>Absensi Karyawan</h1>
+    <p class="sub">SPPG TNI AD Ngawi Widodaren Gendingan 2</p>
+    <label for="inId">ID Karyawan</label>
+    <input id="inId" name="username" type="text" autocomplete="username" autocapitalize="characters" autocorrect="off" spellcheck="false" maxlength="30" placeholder="Contoh: A0001">
+    <label for="inPw">Password</label>
+    <div class="kolom">
+      <input id="inPw" name="password" type="password" autocomplete="current-password" maxlength="100" placeholder="Masukkan password" style="padding-right:76px">
+      <button type="button" class="mata" id="btnMata">Lihat</button>
+    </div>
+    <div id="pesanLogin" class="pesan" hidden></div>
+    <button class="btn" id="btnMasuk" type="submit">Masuk</button>
+  </form>
+</div>
+
+<!-- APLIKASI -->
+<div id="app" class="layar" hidden>
+  <header class="bar">
+    <div class="merek">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+      <div>Absensi SPPG<small>Widodaren Gendingan 2</small></div>
+    </div>
+    <button class="btn kecil garis" id="btnLogout" type="button">Keluar</button>
+  </header>
+
+  <main>
+    <section class="kartu profil">
+      <div class="avatar" id="uAvatar">?</div>
+      <div class="isi">
+        <h2 id="uNama">-</h2>
+        <div class="meta" id="uMeta">-</div>
+        <span class="badge" id="uRole">Karyawan</span>
+      </div>
+      <button class="btn kecil garis" id="btnGantiPw" type="button">Ganti Password</button>
+    </section>
+
+    <section class="kartu jam">
+      <div id="jam">--:--:--</div>
+      <div id="tanggal">-</div>
+      <div class="zona">Waktu Indonesia Barat (WIB)</div>
+    </section>
+
+    <section class="kartu">
+      <div class="judulbaris"><p class="judul">Absensi</p><span id="pill" class="pill">Memuat…</span></div>
+      <div class="baris2">
+        <button class="btn aksi" id="btnAbsenMasuk" type="button" disabled>Absen Masuk</button>
+        <button class="btn aksi pulang" id="btnAbsenPulang" type="button" disabled>Absen Pulang</button>
+      </div>
+      <p class="catatan" id="infoAbsen"></p>
+      <div class="ringkas">
+        <div><small>Masuk</small><b id="rMasuk">-</b></div>
+        <div><small>Pulang</small><b id="rPulang">-</b></div>
+      </div>
+      <button class="link" id="btnMuatStatus" type="button">Muat ulang status</button>
+    </section>
+
+    <section class="kartu">
+      <div class="judulbaris"><p class="judul">Lokasi Anda</p><span id="lokPill" class="pill">Mencari…</span></div>
+      <div class="lok" id="lokJarak">—</div>
+      <div class="meta" id="lokNama">-</div>
+      <div class="meta" id="lokAkurasi" style="margin-top:4px">Mencari lokasi…</div>
+      <button class="link" id="btnLokasi" type="button">Perbarui lokasi</button>
+    </section>
+
+    <section class="kartu">
+      <p class="judul">Riwayat Absensi Hari Ini</p>
+      <div id="riwayat"></div>
+    </section>
+
+    <section class="kartu" id="pnlAdmin" hidden>
+      <div class="judulbaris"><p class="judul">Kelola Karyawan</p><span class="meta" id="ringkasKar"></span></div>
+      <div class="baris2">
+        <button class="btn" id="btnTambahKar" type="button">+ Tambah Karyawan</button>
+        <button class="btn garis" id="btnTambahBanyak" type="button">Tambah Banyak</button>
+      </div>
+      <input id="cariKar" type="search" placeholder="Cari nama atau ID" autocomplete="off" style="margin-top:12px">
+      <div id="daftarKar" style="margin-top:6px"></div>
+      <p class="catatan">Data absensi, filter, foto, rekap, dan ekspor laporan tersedia pada tahap berikutnya.</p>
+    </section>
+
+    <section class="kartu">
+      <p class="judul">Informasi Sesi</p>
+      <div class="item"><span>Login berlaku sampai</span><b id="sesiSampai">-</b></div>
+      <p class="catatan">Anda tidak perlu login ulang saat halaman direfresh atau browser dibuka kembali selama sesi masih berlaku.</p>
+    </section>
+  </main>
+</div>
+
+<!-- DIALOG: ABSEN -->
+<div class="lapis" id="mAbsen" hidden>
+  <div class="dialog">
+    <div class="dhead"><b id="mAbsenJudul">Absen Masuk</b><button class="x" type="button" data-tutup aria-label="Tutup">✕</button></div>
+    <div class="dbody">
+      <div class="kamerabox">
+        <video id="video" autoplay playsinline muted></video>
+        <img id="hasilFoto" alt="Hasil selfie" hidden>
+        <div class="kampesan" id="kamPesan">Menyalakan kamera…</div>
+      </div>
+      <div class="gpsbox" id="gpsBox"><span id="gpsTeks">Mencari lokasi…</span></div>
+      <div id="pesanAbsen" class="pesan galat" hidden></div>
+      <input type="file" id="fileKamera" accept="image/*" capture="user" hidden>
+    </div>
+    <div class="dfoot">
+      <button class="btn" id="btnJepret" type="button" disabled>Ambil Foto</button>
+      <button class="btn garis" id="btnKamCoba" type="button" hidden>Coba Kamera Lagi</button>
+      <button class="btn garis" id="btnKamCadangan" type="button" hidden>Pakai Kamera Bawaan HP</button>
+      <button class="btn garis" id="btnUlangFoto" type="button" hidden>Ulangi Foto</button>
+      <button class="btn" id="btnKirim" type="button" hidden disabled>Kirim Absen</button>
+    </div>
+  </div>
+</div>
+
+<!-- DIALOG: GANTI PASSWORD -->
+<div class="lapis" id="mPw" hidden>
+  <form class="dialog" id="formPw" novalidate>
+    <div class="dhead"><b>Ganti Password</b><button class="x" type="button" data-tutup aria-label="Tutup">✕</button></div>
+    <div class="dbody">
+      <label for="pwLama">Password lama</label>
+      <input id="pwLama" type="password" autocomplete="current-password" maxlength="100">
+      <label for="pwBaru">Password baru (minimal 6 karakter)</label>
+      <input id="pwBaru" type="password" autocomplete="new-password" maxlength="100">
+      <label for="pwUlang">Ulangi password baru</label>
+      <input id="pwUlang" type="password" autocomplete="new-password" maxlength="100">
+      <div id="pesanPw" class="pesan galat" hidden></div>
+    </div>
+    <div class="dfoot"><button class="btn" id="btnSimpanPw" type="submit">Simpan Password</button></div>
+  </form>
+</div>
+
+<!-- DIALOG: TAMBAH KARYAWAN -->
+<div class="lapis" id="mTambah" hidden>
+  <form class="dialog" id="formTambah" novalidate>
+    <div class="dhead"><b>Tambah Karyawan</b><button class="x" type="button" data-tutup aria-label="Tutup">✕</button></div>
+    <div class="dbody">
+      <label for="tKarNama">Nama lengkap</label>
+      <input id="tKarNama" type="text" maxlength="60" autocomplete="off">
+      <label for="tKarJabatan">Jabatan (opsional)</label>
+      <input id="tKarJabatan" type="text" maxlength="40" autocomplete="off">
+      <label for="tKarRole">Peran</label>
+      <select id="tKarRole"><option value="KARYAWAN">Karyawan</option><option value="ADMIN">Admin</option></select>
+      <p class="catatan">ID (A0001, A0002, dan seterusnya) dan password awal dibuat otomatis.</p>
+      <div id="pesanTambah" class="pesan galat" hidden></div>
+    </div>
+    <div class="dfoot"><button class="btn" id="btnSimpanTambah" type="submit">Buat Akun</button></div>
+  </form>
+</div>
+
+<!-- DIALOG: TAMBAH BANYAK -->
+<div class="lapis" id="mBanyak" hidden>
+  <form class="dialog" id="formBanyak" novalidate>
+    <div class="dhead"><b>Tambah Banyak Karyawan</b><button class="x" type="button" data-tutup aria-label="Tutup">✕</button></div>
+    <div class="dbody">
+      <label for="tBanyak">Satu karyawan per baris: Nama; Jabatan</label>
+      <textarea id="tBanyak" rows="9" placeholder="Budi Santoso; Juru Masak&#10;Siti Aminah; Asisten Gudang&#10;Agus Salim; Pengemas"></textarea>
+      <p class="catatan">Maksimal 60 baris sekali proses. Jabatan boleh dikosongkan. Proses bisa memakan waktu sekitar setengah menit.</p>
+      <div id="pesanBanyak" class="pesan galat" hidden></div>
+    </div>
+    <div class="dfoot"><button class="btn" id="btnSimpanBanyak" type="submit">Buat Semua Akun</button></div>
+  </form>
+</div>
+
+<!-- DIALOG: HASIL AKUN (ID & PASSWORD) -->
+<div class="lapis" id="mKred" hidden>
+  <div class="dialog">
+    <div class="dhead"><b id="kredJudul">Akun Dibuat</b><button class="x" type="button" data-tutup aria-label="Tutup">✕</button></div>
+    <div class="dbody">
+      <p id="kredRingkas" style="margin:0 0 10px;font-weight:600"></p>
+      <textarea id="kredTeks" rows="8" readonly></textarea>
+      <div class="pesan info">Catat atau salin sekarang. Password tidak dapat ditampilkan lagi setelah jendela ini ditutup.</div>
+    </div>
+    <div class="dfoot">
+      <button class="btn" id="btnSalinKred" type="button">Salin</button>
+      <button class="btn garis" type="button" data-tutup>Selesai</button>
+    </div>
+  </div>
+</div>
+
+<!-- DIALOG: KONFIRMASI -->
+<div class="lapis" id="mKonf" hidden>
+  <div class="dialog">
+    <div class="dhead"><b id="konfJudul">Konfirmasi</b><button class="x" type="button" data-tutup aria-label="Tutup">✕</button></div>
+    <div class="dbody"><p id="konfTeks" style="margin:0;line-height:1.5"></p></div>
+    <div class="dfoot">
+      <button class="btn garis" type="button" data-tutup>Batal</button>
+      <button class="btn" id="btnKonfOk" type="button">Ya</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var KUNCI = 'sppg_absen_sesi_v1';
+  var API_URL = 'https://script.google.com/macros/s/AKfycbw_PKx5iCuxxltikS7lbavBJXyrV44KMdP-FDNruS0RFkSSIzoO7mXlNSsXtVSBs2ci/exec';
+  var BLN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+  var memori = null;
+  var selisih = 0;
+  var timerJam = null, timerToast = null;
+  var terakhirCek = 0, terakhirStatus = 0;
+  var user = null, pusat = null, gpsUmum = null;
+  var daftar = [];
+  var konfAksi = null;
+  var absen = { jenis: null, foto: null, stream: null, watchId: null, gps: null, sibuk: false };
+
+  var fJam = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' });
+  var fTgl = new Intl.DateTimeFormat('id-ID', { timeZone: 'Asia/Jakarta', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  var fExp = new Intl.DateTimeFormat('id-ID', { timeZone: 'Asia/Jakarta', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+
+  /* ---------- Utilitas ---------- */
+  function $(id) { return document.getElementById(id); }
+  function el(tag, kelas, teks) {
+    var e = document.createElement(tag);
+    if (kelas) e.className = kelas;
+    if (teks !== undefined && teks !== null) e.textContent = teks;
+    return e;
+  }
+  function tampil(nama) {
+    ['muat', 'galat', 'login', 'app'].forEach(function (n) { $(n).hidden = (n !== nama); });
+  }
+  function toast(teks) {
+    var t = $('toast');
+    t.textContent = teks;
+    t.className = 'tampil';
+    clearTimeout(timerToast);
+    timerToast = setTimeout(function () { t.className = ''; }, 3600);
+  }
+  function pesanEl(id, teks, jenis) {
+    var e = $(id);
+    if (!teks) { e.hidden = true; return; }
+    e.textContent = teks;
+    e.className = 'pesan ' + (jenis || 'galat');
+    e.hidden = false;
+  }
+  function sibukTombol(id, ya, teksSibuk) {
+    var b = $(id);
+    if (ya) {
+      if (!b.dataset.sibuk) { b.dataset.asli = b.textContent; b.dataset.sibuk = '1'; }
+      b.disabled = true;
+      b.innerHTML = '<span class="spin"></span> ' + teksSibuk;
+    } else {
+      delete b.dataset.sibuk;
+      b.disabled = false;
+      b.textContent = b.dataset.asli || b.textContent;
+    }
+  }
+  function jarak(lat1, lng1, lat2, lng2) {
+    var R = 6371000, r = Math.PI / 180;
+    var dLat = (lat2 - lat1) * r, dLng = (lng2 - lng1) * r;
+    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * r) * Math.cos(lat2 * r) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    return 2 * R * Math.asin(Math.min(1, Math.sqrt(a)));
+  }
+  function fmtJarak(m) {
+    return m < 1000 ? Math.round(m) + ' m' : (m / 1000).toFixed(2).replace('.', ',') + ' km';
+  }
+  function waktuTampil(s, tanggalAcuan) {
+    if (!s) return '-';
+    var t = s.slice(0, 10), j = s.slice(11, 16);
+    if (t === tanggalAcuan) return j;
+    return parseInt(s.slice(8, 10), 10) + ' ' + BLN[parseInt(s.slice(5, 7), 10) - 1] + ' ' + j;
+  }
+  function kelasStatus(s) {
+    return { 'MASUK': 'biru', 'LENGKAP': 'hijau', 'LUPA PULANG': 'merah', 'AKTIF': 'hijau', 'NONAKTIF': 'merah' }[s] || '';
+  }
+  function salin(teks) {
+    function cadangan() {
+      var ta = document.createElement('textarea');
+      ta.value = teks; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta);
+      toast(ok ? 'Tersalin.' : 'Gagal menyalin. Pilih teks lalu salin manual.');
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(teks).then(function () { toast('Tersalin.'); }, cadangan);
+    } else { cadangan(); }
+  }
+
+  /* ---------- Penyimpanan sesi ---------- */
+  function bacaSesi() {
+    try { var s = localStorage.getItem(KUNCI); if (s) return JSON.parse(s); } catch (e) {}
+    return memori;
+  }
+  function simpanSesi(o) { memori = o; try { localStorage.setItem(KUNCI, JSON.stringify(o)); } catch (e) {} }
+  function hapusSesi() { memori = null; try { localStorage.removeItem(KUNCI); } catch (e) {} }
+  function tokenSaatIni() { var s = bacaSesi(); return s && s.token ? s.token : ''; }
+
+  /* ---------- Panggilan server ---------- */
+  function panggil(nama, args, ok, gagal) {
+    // Di dalam Apps Script (API_URL kosong): pakai google.script.run
+    if (!API_URL && window.google && google.script && google.script.run) {
+      var r = google.script.run.withSuccessHandler(ok).withFailureHandler(gagal);
+      r[nama].apply(r, args);
+      return;
+    }
+    // Di hosting luar: kirim ke Web App sebagai JSON
+    var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 120000) : null;
+    function bersih() { if (timer) clearTimeout(timer); }
+    fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ fn: nama, args: args }),
+      redirect: 'follow',
+      signal: ctrl ? ctrl.signal : undefined
+    }).then(function (resp) {
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      return resp.json();
+    }).then(function (data) { bersih(); ok(data); },
+            function (err) { bersih(); gagal(err); });
+  }
+
+  function sesiBermasalah(res) {
+    if (res && (res.kode === 'SESI_TIDAK_VALID' || res.kode === 'SESI_BERAKHIR')) {
+      keLogin(res.pesan, 'info');
+      return true;
+    }
+    return false;
+  }
+
+  /* ---------- Dialog ---------- */
+  function buka(id) { $(id).hidden = false; document.body.classList.add('kunci'); }
+  function tutupModal(id) {
+    if (id === 'mAbsen') { if (absen.sibuk) return; hentikanAbsen(); }
+    $(id).hidden = true;
+    if (!document.querySelector('.lapis:not([hidden])')) document.body.classList.remove('kunci');
+  }
+  function tutupSemuaModal() {
+    hentikanAbsen();
+    var semua = document.querySelectorAll('.lapis');
+    for (var i = 0; i < semua.length; i++) semua[i].hidden = true;
+    document.body.classList.remove('kunci');
+  }
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest ? e.target.closest('[data-tutup]') : null;
+    if (!t) return;
+    var m = t.closest('.lapis');
+    if (m) tutupModal(m.id);
+  });
+  function konfirmasi(judul, teks, labelOk, aksi) {
+    $('konfJudul').textContent = judul;
+    $('konfTeks').textContent = teks;
+    $('btnKonfOk').textContent = labelOk;
+    konfAksi = aksi;
+    buka('mKonf');
+  }
+  $('btnKonfOk').addEventListener('click', function () {
+    var a = konfAksi; konfAksi = null;
+    tutupModal('mKonf');
+    if (a) a();
+  });
+  function tampilKred(judul, ringkas, teks) {
+    $('kredJudul').textContent = judul;
+    $('kredRingkas').textContent = ringkas;
+    $('kredTeks').value = teks;
+    buka('mKred');
+  }
+  $('btnSalinKred').addEventListener('click', function () { salin($('kredTeks').value); });
+
+  /* ---------- Login ---------- */
+  function pesanLogin(teks, jenis) { pesanEl('pesanLogin', teks, jenis); }
+
+  $('btnMata').addEventListener('click', function () {
+    var p = $('inPw');
+    var lihat = p.type === 'password';
+    p.type = lihat ? 'text' : 'password';
+    this.textContent = lihat ? 'Sembunyi' : 'Lihat';
+  });
+
+  $('formLogin').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var id = $('inId').value.trim(), pw = $('inPw').value;
+    if (!id || !pw) { pesanLogin('ID dan password wajib diisi.'); return; }
+    pesanLogin('');
+    sibukTombol('btnMasuk', true, 'Memeriksa…');
+    panggil('apiLogin', [id, pw], function (res) {
+      sibukTombol('btnMasuk', false);
+      if (!res || !res.ok) {
+        pesanLogin((res && res.pesan) || 'Login gagal.');
+        $('inPw').value = ''; $('inPw').focus();
+        return;
+      }
+      simpanSesi({ token: res.token, exp: res.exp });
+      $('inPw').value = '';
+      masuk(res);
+    }, function () {
+      sibukTombol('btnMasuk', false);
+      pesanLogin('Tidak dapat terhubung ke server. Periksa sinyal internet Anda.');
+    });
+  });
+
+  /* ---------- Masuk ke aplikasi ---------- */
+  function inisial(nama) {
+    var k = String(nama).trim().split(/\s+/);
+    return ((k[0] || '?').charAt(0) + (k.length > 1 ? k[1].charAt(0) : '')).toUpperCase();
+  }
+  function tick() {
+    var now = new Date(Date.now() + selisih);
+    $('jam').textContent = fJam.format(now);
+    $('tanggal').textContent = fTgl.format(now);
+  }
+  function mulaiJam() {
+    if (timerJam) clearInterval(timerJam);
+    tick();
+    timerJam = setInterval(tick, 1000);
+  }
+
+  function masuk(res) {
+    user = res.user;
+    selisih = res.serverNow - Date.now();
+    terakhirCek = Date.now();
+    $('uNama').textContent = user.nama || user.id;
+    $('uAvatar').textContent = inisial(user.nama || user.id);
+    $('uMeta').textContent = user.id + (user.jabatan ? ' • ' + user.jabatan : '');
+    var admin = (user.role === 'ADMIN');
+    $('uRole').textContent = admin ? 'Admin' : 'Karyawan';
+    $('uRole').className = 'badge' + (admin ? ' admin' : '');
+    $('pnlAdmin').hidden = !admin;
+    $('sesiSampai').textContent = fExp.format(new Date(res.exp)) + ' WIB';
+    tampil('app');
+    mulaiJam();
+    kosongkanStatus();
+    muatStatus(false);
+    perbaruiLokasi();
+    if (admin) muatDaftar();
+  }
+
+  function keLogin(teks, jenis) {
+    if (timerJam) { clearInterval(timerJam); timerJam = null; }
+    tutupSemuaModal();
+    hapusSesi();
+    user = null; pusat = null; gpsUmum = null; daftar = [];
+    tampil('login');
+    pesanLogin(teks || '', jenis || 'info');
+  }
+
+  $('btnLogout').addEventListener('click', function () {
+    var t = tokenSaatIni();
+    if (t) panggil('apiLogout', [t], function () {}, function () {});
+    keLogin('Anda telah keluar.', 'info');
+  });
+
+  /* ---------- Status absensi ---------- */
+  function kosongkanStatus() {
+    $('pill').textContent = 'Memuat…'; $('pill').className = 'pill';
+    $('btnAbsenMasuk').disabled = true; $('btnAbsenPulang').disabled = true;
+    $('infoAbsen').textContent = ''; $('rMasuk').textContent = '-'; $('rPulang').textContent = '-';
+    $('riwayat').textContent = '';
+  }
+
+  function muatStatus(diam) {
+    panggil('apiStatus', [tokenSaatIni()], function (res) {
+      if (sesiBermasalah(res)) return;
+      if (!res || !res.ok) { if (!diam) toast((res && res.pesan) || 'Gagal memuat status absensi.'); return; }
+      terakhirStatus = Date.now();
+      renderStatus(res);
+    }, function () { if (!diam) toast('Tidak dapat terhubung ke server.'); });
+  }
+  $('btnMuatStatus').addEventListener('click', function () { muatStatus(false); perbaruiLokasi(); });
+
+  function renderStatus(st) {
+    selisih = st.serverNow - Date.now();
+    if (st.lokasi) { pusat = st.lokasi; renderLokasi(); }
+
+    var p = $('pill');
+    p.textContent = st.status;
+    p.className = 'pill ' + kelasStatus(st.status);
+    $('btnAbsenMasuk').disabled = !st.bolehMasuk;
+    $('btnAbsenPulang').disabled = !st.bolehPulang;
+
+    var info = st.pesan || '';
+    if (st.bolehMasuk) info = (info ? info + ' ' : '') + 'Silakan absen masuk saat tiba di lokasi.';
+    else if (st.bolehPulang) info = 'Anda sedang bekerja. Absen pulang setelah selesai bekerja.';
+    else if (!info) info = st.alasanMasuk || 'Absensi Anda sudah lengkap.';
+    $('infoAbsen').textContent = info;
+
+    function ringkas(o) {
+      if (!o.sudah) return '-';
+      var t = waktuTampil(o.waktu, st.tanggal);
+      return (o.jarak !== null && o.jarak !== undefined && o.jarak !== '') ? t + ' • ' + fmtJarak(o.jarak) : t;
+    }
+    $('rMasuk').textContent = ringkas(st.masuk);
+    $('rPulang').textContent = ringkas(st.pulang);
+    renderRiwayat(st);
+  }
+
+  function renderRiwayat(st) {
+    var box = $('riwayat');
+    box.textContent = '';
+    if (!st.riwayat || !st.riwayat.length) { box.appendChild(el('p', 'catatan', 'Belum ada absensi.')); box.lastChild.style.margin = '0'; return; }
+    st.riwayat.forEach(function (r) {
+      var b = el('div', 'rw');
+      var kiri = el('div');
+      kiri.appendChild(el('b', null, 'Masuk ' + waktuTampil(r.jamMasuk, st.tanggal)));
+      kiri.appendChild(el('div', 'meta', 'Pulang ' + (r.jamPulang ? waktuTampil(r.jamPulang, st.tanggal) : '-')));
+      b.appendChild(kiri);
+      b.appendChild(el('span', 'pill ' + kelasStatus(r.status), r.status));
+      box.appendChild(b);
+    });
+  }
+
+  /* ---------- Lokasi (kartu dashboard) ---------- */
+  function pesanGps(err) {
+    if (err && err.code === 1) return 'Izin lokasi ditolak. Aktifkan izin Lokasi untuk situs ini di pengaturan browser/HP, lalu muat ulang halaman.';
+    if (err && err.code === 2) return 'Lokasi tidak tersedia. Pastikan GPS/Lokasi aktif lalu coba lagi.';
+    if (err && err.code === 3) return 'Pencarian lokasi terlalu lama. Pindah ke area terbuka lalu coba lagi.';
+    return 'Lokasi tidak dapat dibaca.';
+  }
+
+  function perbaruiLokasi() {
+    if (!navigator.geolocation) {
+      $('lokPill').textContent = 'GPS tidak ada'; $('lokPill').className = 'pill merah';
+      $('lokAkurasi').textContent = 'Browser ini tidak mendukung GPS.';
+      return;
+    }
+    $('lokPill').textContent = 'Mencari…'; $('lokPill').className = 'pill';
+    $('lokAkurasi').textContent = 'Mencari lokasi…';
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      gpsUmum = { lat: pos.coords.latitude, lng: pos.coords.longitude, akurasi: pos.coords.accuracy };
+      renderLokasi();
+    }, function (err) {
+      gpsUmum = null;
+      $('lokJarak').textContent = '—';
+      $('lokPill').textContent = 'GPS bermasalah'; $('lokPill').className = 'pill merah';
+      $('lokAkurasi').textContent = pesanGps(err);
+    }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 30000 });
+  }
+  $('btnLokasi').addEventListener('click', perbaruiLokasi);
+
+  function renderLokasi() {
+    if (!pusat) return;
+    $('lokNama').textContent = pusat.nama;
+    if (!gpsUmum) return;
+    var j = jarak(gpsUmum.lat, gpsUmum.lng, pusat.lat, pusat.lng);
+    var dalam = j <= pusat.radius;
+    $('lokJarak').textContent = fmtJarak(j);
+    $('lokPill').textContent = dalam ? 'Dalam area absensi' : 'Di luar area absensi';
+    $('lokPill').className = 'pill ' + (dalam ? 'hijau' : 'merah');
+    $('lokAkurasi').textContent = 'Jarak dari lokasi absensi • akurasi ±' + Math.round(gpsUmum.akurasi) + ' m • radius maksimal ' + fmtJarak(pusat.radius);
+  }
+
+  /* ---------- Absen: kamera + GPS ---------- */
+  var sentuh = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+
+  function teksGps(teks, jenis) {
+    $('gpsTeks').textContent = teks;
+    $('gpsBox').className = 'gpsbox' + (jenis ? ' ' + jenis : '');
+  }
+  function pesanAbsen(teks) { pesanEl('pesanAbsen', teks, 'galat'); }
+
+  function luarRadius() {
+    if (!absen.gps || !pusat) return false;
+    return jarak(absen.gps.lat, absen.gps.lng, pusat.lat, pusat.lng) > pusat.radius;
+  }
+  function updateKirim() {
+    $('btnKirim').disabled = absen.sibuk || !absen.foto || !absen.gps || luarRadius();
+  }
+
+  function setTahap(t) {
+    var kam = (t === 'kamera');
+    $('video').hidden = !kam;
+    $('hasilFoto').hidden = kam;
+    $('btnJepret').hidden = !kam;
+    $('btnUlangFoto').hidden = kam;
+    $('btnKirim').hidden = kam;
+    if (!kam) { $('kamPesan').hidden = true; $('btnKamCoba').hidden = true; $('btnKamCadangan').hidden = true; }
+    updateKirim();
+  }
+
+  function mulaiAbsen(jenis) {
+    absen.jenis = jenis; absen.foto = null; absen.gps = null; absen.sibuk = false;
+    $('mAbsenJudul').textContent = jenis === 'MASUK' ? 'Absen Masuk' : 'Absen Pulang';
+    pesanAbsen('');
+    setTahap('kamera');
+    buka('mAbsen');
+    mulaiGps();
+    mulaiKamera();
+  }
+  $('btnAbsenMasuk').addEventListener('click', function () { mulaiAbsen('MASUK'); });
+  $('btnAbsenPulang').addEventListener('click', function () { mulaiAbsen('PULANG'); });
+
+  function pesanKamera(err) {
+    var n = err && err.name;
+    if (n === 'NotAllowedError' || n === 'PermissionDeniedError') return 'Izin kamera ditolak atau diblokir. Aktifkan izin Kamera untuk situs ini di pengaturan browser/HP, lalu tekan Coba Kamera Lagi.';
+    if (n === 'NotFoundError' || n === 'DevicesNotFoundError') return 'Kamera tidak ditemukan pada perangkat ini.';
+    if (n === 'NotReadableError' || n === 'TrackStartError') return 'Kamera sedang dipakai aplikasi lain. Tutup aplikasi itu lalu coba lagi.';
+    if (n === 'SecurityError') return 'Kamera diblokir oleh browser pada halaman ini.';
+    return 'Kamera tidak dapat dibuka' + (n ? ' (' + n + ')' : '') + '.';
+  }
+
+  function kameraGagal(teks) {
+    $('kamPesan').textContent = teks;
+    $('kamPesan').hidden = false;
+    $('btnJepret').disabled = true;
+    $('btnKamCoba').hidden = false;
+    $('btnKamCadangan').hidden = !sentuh;
+  }
+
+  function hentikanKamera() {
+    if (absen.stream) {
+      absen.stream.getTracks().forEach(function (t) { t.stop(); });
+      absen.stream = null;
+    }
+    try { $('video').srcObject = null; } catch (e) {}
+  }
+
+  function mulaiKamera() {
+    hentikanKamera();
+    $('kamPesan').textContent = 'Menyalakan kamera…';
+    $('kamPesan').hidden = false;
+    $('btnJepret').disabled = true;
+    $('btnKamCoba').hidden = true;
+    $('btnKamCadangan').hidden = true;
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      kameraGagal('Browser ini tidak mendukung kamera langsung.');
+      return;
+    }
+    navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false
+    }).then(function (stream) {
+      if ($('mAbsen').hidden) { stream.getTracks().forEach(function (t) { t.stop(); }); return; }
+      absen.stream = stream;
+      var v = $('video');
+      v.srcObject = stream;
+      return v.play().then(function () {
+        $('kamPesan').hidden = true;
+        $('btnJepret').disabled = false;
+      });
+    }).catch(function (err) { kameraGagal(pesanKamera(err)); });
+  }
+  $('btnKamCoba').addEventListener('click', mulaiKamera);
+  $('btnKamCadangan').addEventListener('click', function () { $('fileKamera').click(); });
+
+  function gambarKeFoto(sumber, w, h) {
+    if (!w || !h) { toast('Foto tidak dapat dibaca.'); return; }
+    var skala = Math.min(1, 640 / Math.max(w, h));
+    var c = document.createElement('canvas');
+    c.width = Math.round(w * skala); c.height = Math.round(h * skala);
+    c.getContext('2d').drawImage(sumber, 0, 0, c.width, c.height);
+    absen.foto = c.toDataURL('image/jpeg', 0.72);
+    $('hasilFoto').src = absen.foto;
+    hentikanKamera();
+    pesanAbsen('');
+    setTahap('hasil');
+  }
+  $('btnJepret').addEventListener('click', function () {
+    var v = $('video');
+    if (!v.videoWidth) { toast('Kamera belum siap.'); return; }
+    gambarKeFoto(v, v.videoWidth, v.videoHeight);
+  });
+  $('fileKamera').addEventListener('change', function () {
+    var f = this.files && this.files[0];
+    this.value = '';
+    if (!f) return;
+    var url = URL.createObjectURL(f), img = new Image();
+    img.onload = function () { gambarKeFoto(img, img.naturalWidth, img.naturalHeight); URL.revokeObjectURL(url); };
+    img.onerror = function () { toast('Foto tidak dapat dibaca.'); URL.revokeObjectURL(url); };
+    img.src = url;
+  });
+  $('btnUlangFoto').addEventListener('click', function () {
+    absen.foto = null;
+    pesanAbsen('');
+    setTahap('kamera');
+    mulaiKamera();
+  });
+
+  function renderGps() {
+    var g = absen.gps;
+    if (!g) return;
+    if (!pusat) { teksGps('Lokasi terbaca • akurasi ±' + Math.round(g.akurasi) + ' m', 'ok'); return; }
+    var j = jarak(g.lat, g.lng, pusat.lat, pusat.lng);
+    var dalam = j <= pusat.radius;
+    teksGps((dalam ? 'Dalam area absensi' : 'Di luar area absensi (maksimal ' + fmtJarak(pusat.radius) + ')') +
+            ' • jarak ' + fmtJarak(j) + ' • akurasi ±' + Math.round(g.akurasi) + ' m' +
+            (g.akurasi > 100 ? ' (rendah)' : ''), dalam ? 'ok' : 'err');
+  }
+
+  function mulaiGps() {
+    hentikanGps();
+    if (!navigator.geolocation) { teksGps('Browser ini tidak mendukung GPS.', 'err'); return; }
+    teksGps('Mencari lokasi…', '');
+    absen.watchId = navigator.geolocation.watchPosition(function (pos) {
+      absen.gps = { lat: pos.coords.latitude, lng: pos.coords.longitude, akurasi: pos.coords.accuracy, waktu: Date.now() };
+      renderGps();
+      updateKirim();
+    }, function (err) {
+      if (err && err.code === 1) absen.gps = null;
+      teksGps(pesanGps(err), 'err');
+      updateKirim();
+    }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+  }
+  function hentikanGps() {
+    if (absen.watchId !== null && navigator.geolocation) {
+      try { navigator.geolocation.clearWatch(absen.watchId); } catch (e) {}
+    }
+    absen.watchId = null;
+  }
+  function hentikanAbsen() {
+    hentikanKamera();
+    hentikanGps();
+    absen.foto = null; absen.gps = null; absen.sibuk = false;
+    sibukTombol('btnKirim', false);
+  }
+
+  $('btnKirim').addEventListener('click', function () {
+    if (absen.sibuk || !absen.foto || !absen.gps) return;
+    var g = absen.gps;
+    absen.sibuk = true;
+    sibukTombol('btnKirim', true, 'Mengirim…');
+    pesanAbsen('');
+    var fn = absen.jenis === 'MASUK' ? 'apiAbsenMasuk' : 'apiAbsenPulang';
+    panggil(fn, [tokenSaatIni(), { lat: g.lat, lng: g.lng, akurasi: g.akurasi, foto: absen.foto }], function (res) {
+      absen.sibuk = false;
+      sibukTombol('btnKirim', false);
+      if (sesiBermasalah(res)) return;
+      if (!res || !res.ok) {
+        pesanAbsen((res && res.pesan) || 'Absen gagal.');
+        if (res && res.kode === 'STATUS') muatStatus(true);
+        updateKirim();
+        return;
+      }
+      var pesan = res.pesan + ' Pukul ' + String(res.waktu).slice(11, 19) + ' WIB.';
+      tutupModal('mAbsen');
+      terakhirStatus = Date.now();
+      renderStatus(res.status);
+      toast(pesan);
+    }, function () {
+      absen.sibuk = false;
+      sibukTombol('btnKirim', false);
+      pesanAbsen('Tidak dapat terhubung ke server. Tekan Kirim Absen untuk mencoba lagi. Jika ragu, tutup jendela ini dan periksa status absensi Anda.');
+      updateKirim();
+    });
+  });
+
+  /* ---------- Ganti password ---------- */
+  $('btnGantiPw').addEventListener('click', function () {
+    $('formPw').reset();
+    pesanEl('pesanPw', '');
+    buka('mPw');
+  });
+  $('formPw').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var lama = $('pwLama').value, baru = $('pwBaru').value, ulang = $('pwUlang').value;
+    if (!lama || !baru || !ulang) { pesanEl('pesanPw', 'Semua kolom wajib diisi.'); return; }
+    if (baru.length < 6) { pesanEl('pesanPw', 'Password baru minimal 6 karakter.'); return; }
+    if (baru !== ulang) { pesanEl('pesanPw', 'Ulangi password baru tidak sama.'); return; }
+    if (baru === lama) { pesanEl('pesanPw', 'Password baru harus berbeda dari password lama.'); return; }
+    pesanEl('pesanPw', '');
+    sibukTombol('btnSimpanPw', true, 'Menyimpan…');
+    panggil('apiGantiPassword', [tokenSaatIni(), lama, baru], function (res) {
+      sibukTombol('btnSimpanPw', false);
+      if (sesiBermasalah(res)) return;
+      if (!res || !res.ok) { pesanEl('pesanPw', (res && res.pesan) || 'Gagal mengganti password.'); return; }
+      simpanSesi({ token: res.token, exp: res.exp });
+      $('sesiSampai').textContent = fExp.format(new Date(res.exp)) + ' WIB';
+      tutupModal('mPw');
+      toast('Password berhasil diganti.');
+    }, function () {
+      sibukTombol('btnSimpanPw', false);
+      pesanEl('pesanPw', 'Tidak dapat terhubung ke server.');
+    });
+  });
+
+  /* ---------- Admin: kelola karyawan ---------- */
+  function muatDaftar() {
+    panggil('apiAdminDaftarKaryawan', [tokenSaatIni()], function (res) {
+      if (sesiBermasalah(res)) return;
+      if (!res || !res.ok) { toast((res && res.pesan) || 'Gagal memuat daftar karyawan.'); return; }
+      daftar = res.daftar;
+      renderDaftar();
+    }, function () { toast('Tidak dapat memuat daftar karyawan.'); });
+  }
+  $('cariKar').addEventListener('input', renderDaftar);
+
+  function renderDaftar() {
+    var q = $('cariKar').value.trim().toLowerCase();
+    var box = $('daftarKar');
+    box.textContent = '';
+    var aktif = daftar.filter(function (k) { return k.status === 'AKTIF'; }).length;
+    $('ringkasKar').textContent = daftar.length + ' akun • ' + aktif + ' aktif';
+
+    var tampilData = daftar.filter(function (k) {
+      return !q || k.nama.toLowerCase().indexOf(q) >= 0 || k.id.toLowerCase().indexOf(q) >= 0;
+    });
+    if (!tampilData.length) { var kosong = el('p', 'catatan', daftar.length ? 'Tidak ada yang cocok.' : 'Belum ada karyawan.'); box.appendChild(kosong); return; }
+
+    tampilData.forEach(function (k) {
+      var baris = el('div', 'kar');
+      var info = el('div', 'kar-info');
+      info.appendChild(el('b', null, k.nama));
+      info.appendChild(el('span', 'meta', k.id + (k.jabatan ? ' • ' + k.jabatan : '')));
+      var lencana = el('div');
+      if (k.role === 'ADMIN') { var a = el('span', 'badge admin', 'Admin'); a.style.marginRight = '6px'; lencana.appendChild(a); }
+      if (k.status !== 'AKTIF') lencana.appendChild(el('span', 'badge nonaktif', 'Nonaktif'));
+      if (user && k.id.toUpperCase() === String(user.id).toUpperCase()) { var s = el('span', 'badge', 'Anda'); s.style.marginLeft = '6px'; lencana.appendChild(s); }
+      if (lencana.childNodes.length) info.appendChild(lencana);
+      baris.appendChild(info);
+
+      var aksi = el('div', 'kar-aksi');
+      var diriSendiri = user && k.id.toUpperCase() === String(user.id).toUpperCase();
+      if (!diriSendiri) {
+        var bReset = el('button', 'btn kecil garis', 'Reset');
+        bReset.type = 'button';
+        bReset.addEventListener('click', function () { resetKar(k); });
+        var bStatus = el('button', 'btn kecil garis', k.status === 'AKTIF' ? 'Nonaktifkan' : 'Aktifkan');
+        bStatus.type = 'button';
+        bStatus.addEventListener('click', function () { ubahStatusKar(k); });
+        aksi.appendChild(bReset); aksi.appendChild(bStatus);
+      }
+      baris.appendChild(aksi);
+      box.appendChild(baris);
+    });
+  }
+
+  function resetKar(k) {
+    konfirmasi('Reset password', 'Buat password baru untuk ' + k.nama + ' (' + k.id + ')? Password lama langsung tidak berlaku dan karyawan harus login ulang.', 'Reset', function () {
+      panggil('apiAdminResetPassword', [tokenSaatIni(), k.id], function (res) {
+        if (sesiBermasalah(res)) return;
+        if (!res || !res.ok) { toast((res && res.pesan) || 'Gagal reset password.'); return; }
+        tampilKred('Password Baru', 'Password baru untuk ' + res.nama, 'ID: ' + res.id + '\nNama: ' + res.nama + '\nPassword: ' + res.password);
+      }, function () { toast('Tidak dapat terhubung ke server.'); });
+    });
+  }
+
+  function ubahStatusKar(k) {
+    var baru = k.status === 'AKTIF' ? 'NONAKTIF' : 'AKTIF';
+    var teks = baru === 'NONAKTIF'
+      ? k.nama + ' (' + k.id + ') tidak akan bisa login lagi, tetapi riwayat absensinya tetap tersimpan.'
+      : k.nama + ' (' + k.id + ') akan dapat login kembali.';
+    konfirmasi(baru === 'NONAKTIF' ? 'Nonaktifkan akun' : 'Aktifkan akun', teks, baru === 'NONAKTIF' ? 'Nonaktifkan' : 'Aktifkan', function () {
+      panggil('apiAdminUbahStatus', [tokenSaatIni(), k.id, baru], function (res) {
+        if (sesiBermasalah(res)) return;
+        if (!res || !res.ok) { toast((res && res.pesan) || 'Gagal mengubah status.'); return; }
+        toast(k.nama + ' sekarang ' + (baru === 'AKTIF' ? 'aktif.' : 'nonaktif.'));
+        muatDaftar();
+      }, function () { toast('Tidak dapat terhubung ke server.'); });
+    });
+  }
+
+  $('btnTambahKar').addEventListener('click', function () {
+    $('formTambah').reset(); pesanEl('pesanTambah', ''); buka('mTambah');
+  });
+  $('formTambah').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var nama = $('tKarNama').value.trim();
+    if (!nama) { pesanEl('pesanTambah', 'Nama wajib diisi.'); return; }
+    pesanEl('pesanTambah', '');
+    sibukTombol('btnSimpanTambah', true, 'Membuat akun…');
+    panggil('apiAdminTambahKaryawan', [tokenSaatIni(), nama, $('tKarJabatan').value, $('tKarRole').value], function (res) {
+      sibukTombol('btnSimpanTambah', false);
+      if (sesiBermasalah(res)) return;
+      if (!res || !res.ok) { pesanEl('pesanTambah', (res && res.pesan) || 'Gagal membuat akun.'); return; }
+      var a = res.akun;
+      tutupModal('mTambah');
+      tampilKred('Akun Dibuat', 'Akun untuk ' + a.nama + ' berhasil dibuat.',
+        'ID: ' + a.id + '\nNama: ' + a.nama + '\nJabatan: ' + (a.jabatan || '-') + '\nPeran: ' + a.role + '\nPassword: ' + a.password);
+      muatDaftar();
+    }, function () {
+      sibukTombol('btnSimpanTambah', false);
+      pesanEl('pesanTambah', 'Tidak dapat terhubung ke server.');
+    });
+  });
+
+  $('btnTambahBanyak').addEventListener('click', function () {
+    $('formBanyak').reset(); pesanEl('pesanBanyak', ''); buka('mBanyak');
+  });
+  $('formBanyak').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var teks = $('tBanyak').value;
+    if (!teks.trim()) { pesanEl('pesanBanyak', 'Daftar masih kosong.'); return; }
+    pesanEl('pesanBanyak', '');
+    sibukTombol('btnSimpanBanyak', true, 'Membuat akun…');
+    panggil('apiAdminTambahBanyak', [tokenSaatIni(), teks], function (res) {
+      sibukTombol('btnSimpanBanyak', false);
+      if (sesiBermasalah(res)) return;
+      if (!res || !res.ok) { pesanEl('pesanBanyak', (res && res.pesan) || 'Gagal membuat akun.'); return; }
+      var ok = [], gagal = [];
+      res.hasil.forEach(function (h) {
+        if (h.ok) ok.push(h.id + '\t' + h.nama + '\t' + (h.jabatan || '') + '\t' + h.password);
+        else gagal.push('GAGAL\t' + (h.nama || '(nama kosong)') + '\t' + h.pesan);
+      });
+      var isi = 'ID\tNama\tJabatan\tPassword\n' + ok.join('\n') + (gagal.length ? '\n\n' + gagal.join('\n') : '');
+      tutupModal('mBanyak');
+      tampilKred('Hasil Tambah Banyak', ok.length + ' akun dibuat' + (gagal.length ? ', ' + gagal.length + ' gagal.' : '.'), isi);
+      muatDaftar();
+    }, function () {
+      sibukTombol('btnSimpanBanyak', false);
+      pesanEl('pesanBanyak', 'Tidak dapat terhubung ke server. Periksa daftar karyawan sebelum mengulang, agar tidak terbuat dua kali.');
+    });
+  });
+
+  /* ---------- Pemulihan sesi saat dibuka / refresh ---------- */
+  function mulai() {
+    var s = bacaSesi();
+    if (!s || !s.token) { tampil('login'); return; }
+    tampil('muat');
+    panggil('apiCekSesi', [s.token], function (res) {
+      if (res && res.ok) masuk(res);
+      else keLogin((res && res.pesan) || 'Silakan login kembali.', 'info');
+    }, function () { tampil('galat'); });
+  }
+  $('btnUlang').addEventListener('click', mulai);
+
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState !== 'visible' || $('app').hidden) return;
+    if (Date.now() - terakhirStatus > 60000 && $('mAbsen').hidden) muatStatus(true);
+  });
+
+  mulai();
+})();
+</script>
+</body>
+</html>
