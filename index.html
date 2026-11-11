@@ -5,8 +5,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Absensi SPPG</title>
-<meta name="description" content="Aplikasi internal absensi karyawan SPPG TNI AD Ngawi Widodaren Gendingan 2.">
-<meta name="robots" content="noindex, nofollow">
 <style>
   :root{
     --hijau:#0f766e; --hijau-tua:#115e59; --hijau-muda:#ccfbf1;
@@ -143,7 +141,6 @@
 <!-- LOGIN -->
 <div id="login" class="layar" hidden>
   <form class="kartu-login" id="formLogin" autocomplete="on" novalidate>
-    <p class="catatan" style="text-align:center">Aplikasi internal absensi karyawan SPPG TNI AD Ngawi Widodaren Gendingan 2. Hanya untuk karyawan terdaftar. Lupa ID atau password? Hubungi admin SPPG.</p>
     <div class="logo">
       <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
     </div>
@@ -333,6 +330,25 @@
       <button class="btn" id="btnKonfOk" type="button">Ya</button>
     </div>
   </div>
+</div>
+
+<!-- DIALOG: EDIT KARYAWAN -->
+<div class="lapis" id="mEdit" hidden>
+  <form class="dialog" id="formEdit" novalidate>
+    <div class="dhead"><b>Edit Karyawan</b><button class="x" type="button" data-tutup aria-label="Tutup">✕</button></div>
+    <div class="dbody">
+      <p class="meta" style="margin:0 0 4px">ID: <b id="eKarId">-</b> (tidak dapat diubah)</p>
+      <label for="eKarNama">Nama lengkap</label>
+      <input id="eKarNama" type="text" maxlength="60" autocomplete="off">
+      <label for="eKarJabatan">Jabatan</label>
+      <input id="eKarJabatan" type="text" maxlength="40" autocomplete="off">
+      <label for="eKarRole">Peran</label>
+      <select id="eKarRole"><option value="KARYAWAN">Karyawan</option><option value="ADMIN">Admin</option></select>
+      <p class="catatan" id="eKarCatatan"></p>
+      <div id="pesanEdit" class="pesan galat" hidden></div>
+    </div>
+    <div class="dfoot"><button class="btn" id="btnSimpanEdit" type="submit">Simpan Perubahan</button></div>
+  </form>
 </div>
 
 <div id="toast" role="status" aria-live="polite"></div>
@@ -934,9 +950,10 @@
     var tampilData = daftar.filter(function (k) {
       return !q || k.nama.toLowerCase().indexOf(q) >= 0 || k.id.toLowerCase().indexOf(q) >= 0;
     });
-    if (!tampilData.length) { var kosong = el('p', 'catatan', daftar.length ? 'Tidak ada yang cocok.' : 'Belum ada karyawan.'); box.appendChild(kosong); return; }
+    if (!tampilData.length) { box.appendChild(el('p', 'catatan', daftar.length ? 'Tidak ada yang cocok.' : 'Belum ada karyawan.')); return; }
 
     tampilData.forEach(function (k) {
+      var diriSendiri = user && k.id.toUpperCase() === String(user.id).toUpperCase();
       var baris = el('div', 'kar');
       var info = el('div', 'kar-info');
       info.appendChild(el('b', null, k.nama));
@@ -944,12 +961,15 @@
       var lencana = el('div');
       if (k.role === 'ADMIN') { var a = el('span', 'badge admin', 'Admin'); a.style.marginRight = '6px'; lencana.appendChild(a); }
       if (k.status !== 'AKTIF') lencana.appendChild(el('span', 'badge nonaktif', 'Nonaktif'));
-      if (user && k.id.toUpperCase() === String(user.id).toUpperCase()) { var s = el('span', 'badge', 'Anda'); s.style.marginLeft = '6px'; lencana.appendChild(s); }
+      if (diriSendiri) { var s = el('span', 'badge', 'Anda'); s.style.marginLeft = '6px'; lencana.appendChild(s); }
       if (lencana.childNodes.length) info.appendChild(lencana);
       baris.appendChild(info);
 
       var aksi = el('div', 'kar-aksi');
-      var diriSendiri = user && k.id.toUpperCase() === String(user.id).toUpperCase();
+      var bEdit = el('button', 'btn kecil garis', 'Edit');
+      bEdit.type = 'button';
+      bEdit.addEventListener('click', function () { editKar(k); });
+      aksi.appendChild(bEdit);
       if (!diriSendiri) {
         var bReset = el('button', 'btn kecil garis', 'Reset');
         bReset.type = 'button';
@@ -1038,6 +1058,50 @@
     }, function () {
       sibukTombol('btnSimpanBanyak', false);
       pesanEl('pesanBanyak', 'Tidak dapat terhubung ke server. Periksa daftar karyawan sebelum mengulang, agar tidak terbuat dua kali.');
+    });
+  });
+
+    /* ---------- Admin: edit data karyawan ---------- */
+  var editId = null;
+
+  function editKar(k) {
+    editId = k.id;
+    var diri = user && k.id.toUpperCase() === String(user.id).toUpperCase();
+    $('eKarId').textContent = k.id;
+    $('eKarNama').value = k.nama;
+    $('eKarJabatan').value = k.jabatan;
+    $('eKarRole').value = k.role;
+    $('eKarRole').disabled = !!diri;
+    $('eKarCatatan').textContent = diri
+      ? 'Peran akun Anda sendiri tidak dapat diubah.'
+      : 'Perubahan nama juga diterapkan pada seluruh riwayat absensi karyawan ini.';
+    pesanEl('pesanEdit', '');
+    buka('mEdit');
+  }
+
+  $('formEdit').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var nama = $('eKarNama').value.trim();
+    if (!nama) { pesanEl('pesanEdit', 'Nama wajib diisi.'); return; }
+    pesanEl('pesanEdit', '');
+    sibukTombol('btnSimpanEdit', true, 'Menyimpan…');
+    panggil('apiAdminEditKaryawan', [tokenSaatIni(), editId, nama, $('eKarJabatan').value, $('eKarRole').value], function (res) {
+      sibukTombol('btnSimpanEdit', false);
+      if (sesiBermasalah(res)) return;
+      if (!res || !res.ok) { pesanEl('pesanEdit', (res && res.pesan) || 'Gagal menyimpan perubahan.'); return; }
+      var a = res.akun;
+      if (user && a.id.toUpperCase() === String(user.id).toUpperCase()) {
+        user.nama = a.nama; user.jabatan = a.jabatan;
+        $('uNama').textContent = a.nama;
+        $('uAvatar').textContent = inisial(a.nama);
+        $('uMeta').textContent = a.id + (a.jabatan ? ' • ' + a.jabatan : '');
+      }
+      tutupModal('mEdit');
+      toast('Data ' + a.nama + ' diperbarui.');
+      muatDaftar();
+    }, function () {
+      sibukTombol('btnSimpanEdit', false);
+      pesanEl('pesanEdit', 'Tidak dapat terhubung ke server.');
     });
   });
 
