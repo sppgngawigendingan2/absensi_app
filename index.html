@@ -236,15 +236,81 @@
       <div id="riwayat"></div>
     </section>
 
-    <section class="kartu" id="pnlAdmin" hidden>
-      <div class="judulbaris"><p class="judul">Kelola Karyawan</p><span class="meta" id="ringkasKar"></span></div>
-      <div class="baris2">
-        <button class="btn" id="btnTambahKar" type="button">+ Tambah Karyawan</button>
-        <button class="btn garis" id="btnTambahBanyak" type="button">Tambah Banyak</button>
+        <section class="kartu" id="pnlAdmin" hidden>
+      <div class="judulbaris"><p class="judul">Dashboard Admin</p></div>
+      <div class="tab" id="tabAdmin">
+        <button type="button" data-tab="hariini" class="aktif">Hari Ini</button>
+        <button type="button" data-tab="data">Data Absensi</button>
+        <button type="button" data-tab="rekap">Rekap</button>
+        <button type="button" data-tab="karyawan">Karyawan</button>
       </div>
-      <input id="cariKar" type="search" placeholder="Cari nama atau ID" autocomplete="off" style="margin-top:12px">
-      <div id="daftarKar" style="margin-top:6px"></div>
-      <p class="catatan">Data absensi, filter, foto, rekap, dan ekspor laporan tersedia pada tahap berikutnya.</p>
+
+      <div id="paneHariini">
+        <div class="filter">
+          <div><label for="hTgl">Tanggal</label><input id="hTgl" type="date"></div>
+          <div><label for="hFilter">Tampilkan</label>
+            <select id="hFilter">
+              <option value="SEMUA">Semua</option>
+              <option value="BELUM">Belum absen</option>
+              <option value="BEKERJA">Sedang bekerja</option>
+              <option value="SELESAI">Sudah selesai</option>
+            </select></div>
+          <div style="flex:0 0 auto"><button class="btn kecil" id="btnHariIni" type="button">Muat</button></div>
+        </div>
+        <div class="stat" id="hStat"></div>
+        <div class="tabelbox"><table class="tabel" id="hTabel"></table></div>
+        <p class="catatan">Hanya akun berperan Karyawan yang aktif dihitung. Shift malam dari hari sebelumnya yang masih berjalan dihitung sedang bekerja.</p>
+      </div>
+
+      <div id="paneData" hidden>
+        <div class="filter">
+          <div><label for="dDari">Dari</label><input id="dDari" type="date"></div>
+          <div><label for="dSampai">Sampai</label><input id="dSampai" type="date"></div>
+          <div><label for="dCari">Nama / ID</label><input id="dCari" type="search" placeholder="Cari…" autocomplete="off"></div>
+        </div>
+        <div class="pre" data-p="d">
+          <button type="button" class="link" data-pre="hari">Hari ini</button>
+          <button type="button" class="link" data-pre="7">7 hari</button>
+          <button type="button" class="link" data-pre="bulan">Bulan ini</button>
+          <button type="button" class="link" data-pre="lalu">Bulan lalu</button>
+        </div>
+        <div class="aksi-baris">
+          <button class="btn kecil" id="btnData" type="button">Tampilkan</button>
+          <button class="btn kecil garis" id="btnDataCsv" type="button" disabled>Ekspor CSV</button>
+          <span class="meta" id="dInfo"></span>
+        </div>
+        <div class="tabelbox"><table class="tabel" id="dTabel"></table></div>
+      </div>
+
+      <div id="paneRekap" hidden>
+        <div class="filter">
+          <div><label for="rDari">Dari</label><input id="rDari" type="date"></div>
+          <div><label for="rSampai">Sampai</label><input id="rSampai" type="date"></div>
+        </div>
+        <div class="pre" data-p="r">
+          <button type="button" class="link" data-pre="hari">Hari ini</button>
+          <button type="button" class="link" data-pre="7">7 hari</button>
+          <button type="button" class="link" data-pre="bulan">Bulan ini</button>
+          <button type="button" class="link" data-pre="lalu">Bulan lalu</button>
+        </div>
+        <div class="aksi-baris">
+          <button class="btn kecil" id="btnRekap" type="button">Tampilkan</button>
+          <button class="btn kecil garis" id="btnRekapCsv" type="button" disabled>Ekspor CSV</button>
+          <span class="meta" id="rInfo"></span>
+        </div>
+        <div class="tabelbox"><table class="tabel" id="rTabel"></table></div>
+        <p class="catatan">Jam kerja dihitung dari absensi yang lengkap (masuk dan pulang). Absensi LUPA PULANG dihitung hadir tanpa jam kerja.</p>
+      </div>
+
+      <div id="paneKaryawan" hidden>
+        <div class="judulbaris"><p class="judul">Kelola Karyawan</p><span class="meta" id="ringkasKar"></span></div>
+        <div class="baris2">
+          <button class="btn" id="btnTambahKar" type="button">+ Tambah Karyawan</button>
+          <button class="btn garis" id="btnTambahBanyak" type="button">Tambah Banyak</button>
+        </div>
+        <input id="cariKar" type="search" placeholder="Cari nama atau ID" autocomplete="off" style="margin-top:12px">
+        <div id="daftarKar" style="margin-top:6px"></div>
+      </div>
     </section>
 
     <section class="kartu">
