@@ -441,6 +441,18 @@
   </form>
 </div>
 
+<!-- DIALOG: FOTO ABSENSI -->
+<div class="lapis" id="mFoto" hidden>
+  <div class="dialog">
+    <div class="dhead"><b id="fotoJudul">Foto</b><button class="x" type="button" data-tutup aria-label="Tutup">✕</button></div>
+    <div class="dbody">
+      <div class="fotobox"><img id="fotoImg" alt="Selfie absensi" hidden><span id="fotoPesan">Memuat foto…</span></div>
+      <p class="meta" id="fotoInfo" style="margin:10px 0 0"></p>
+      <a id="fotoPeta" class="link" target="_blank" rel="noopener noreferrer" hidden>Buka lokasi di Google Maps</a>
+    </div>
+  </div>
+</div>
+  
 <div id="toast" role="status" aria-live="polite"></div>
 
 <script>
