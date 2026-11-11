@@ -124,6 +124,30 @@
 
   #toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:#0f172a;color:#fff;padding:11px 16px;border-radius:12px;font-size:.88rem;opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;z-index:50;max-width:90vw;text-align:center}
   #toast.tampil{opacity:1;transform:translateX(-50%) translateY(0)}
+
+    main.lebar{max-width:1100px}
+  .tab{display:flex;gap:6px;overflow-x:auto;margin-bottom:14px;background:#f1f5f9;padding:4px;border-radius:12px}
+  .tab button{flex:1;border:0;background:none;padding:9px 12px;border-radius:9px;font-weight:600;font-size:.85rem;color:var(--abu);cursor:pointer;white-space:nowrap;font-family:inherit}
+  .tab button.aktif{background:#fff;color:var(--hijau-tua);box-shadow:0 1px 2px rgba(15,23,42,.12)}
+  .filter{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:10px}
+  .filter>div{flex:1 1 140px;min-width:0}
+  .filter label{margin-top:0}
+  .pre{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 8px}
+  .aksi-baris{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+  .stat{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+  .stat div{background:#f8fafc;border-radius:12px;padding:10px 6px;text-align:center}
+  .stat b{display:block;font-size:1.35rem}
+  .stat small{color:var(--abu);font-size:.7rem}
+  .tabelbox{overflow:auto;border:1px solid var(--garis);border-radius:12px;max-height:70vh;-webkit-overflow-scrolling:touch}
+  .tabel{border-collapse:collapse;width:100%;min-width:640px;font-size:.85rem}
+  .tabel th{position:sticky;top:0;background:#f1f5f9;text-align:left;padding:9px 10px;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;color:var(--abu);white-space:nowrap;z-index:1}
+  .tabel td{padding:9px 10px;border-top:1px solid var(--garis);vertical-align:middle}
+  .aksi-sel{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .aksi-sel .btn.kecil{padding:5px 9px;font-size:.75rem}
+  .aksi-sel .link{padding:2px 0;font-size:.78rem}
+  .fotobox{background:#0f172a;border-radius:14px;min-height:200px;display:flex;align-items:center;justify-content:center;overflow:hidden;color:#e2e8f0;font-size:.9rem;text-align:center;padding:0}
+  .fotobox img{width:100%;height:auto;display:block}
+  
 </style>
 </head>
 <body>
