@@ -692,7 +692,8 @@
     kosongkanStatus();
     muatStatus(false);
     perbaruiLokasi();
-    if (admin) muatDaftar();
+    document.getElementsByTagName('main')[0].className = admin ? 'lebar' : '';
+    if (admin) { muatDaftar(); adminMulai(); }
   }
 
   function keLogin(teks, jenis) {
