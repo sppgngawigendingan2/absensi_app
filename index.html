@@ -1207,6 +1207,301 @@
     });
   });
 
+    /* ---------- Admin: dashboard (hari ini, data, rekap) ---------- */
+  var adm = { hari: null, data: null, rekap: null };
+  var cacheFoto = {}, fotoKunci = '';
+  var fParts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit' });
+
+  function hariIniIso() {
+    var o = {};
+    fParts.formatToParts(new Date(Date.now() + selisih)).forEach(function (x) { o[x.type] = x.value; });
+    return o.year + '-' + o.month + '-' + o.day;
+  }
+  function tambahHari(iso, n) {
+    var d = new Date(iso + 'T00:00:00Z');
+    d.setUTCDate(d.getUTCDate() + n);
+    return d.toISOString().slice(0, 10);
+  }
+  function tglTampil(iso) {
+    return parseInt(iso.slice(8, 10), 10) + ' ' + BLN[parseInt(iso.slice(5, 7), 10) - 1] + ' ' + iso.slice(0, 4);
+  }
+  function fmtDurasi(m) {
+    if (m === null || m === undefined) return '-';
+    var mm = m % 60;
+    return Math.floor(m / 60) + 'j ' + (mm < 10 ? '0' : '') + mm + 'm';
+  }
+  function angka(v) { return typeof v === 'number' && isFinite(v); }
+  function petaUrl(lat, lng) { return (angka(lat) && angka(lng)) ? 'https://www.google.com/maps?q=' + lat + ',' + lng : ''; }
+
+  function csvSel(v) {
+    if (v === null || v === undefined) return '';
+    if (typeof v === 'number') return String(v);
+    v = String(v);
+    if (/^[=+@\t\r]|^-(?!\d)/.test(v)) v = "'" + v;    // cegah formula di Excel/Sheets
+    return '"' + v.replace(/"/g, '""') + '"';
+  }
+  function unduhCsv(namaFile, baris) {
+    var isi = baris.map(function (r) { return r.map(csvSel).join(';'); }).join('\r\n');
+    var blob = new Blob(['\uFEFF' + isi], { type: 'text/csv;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = namaFile;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 3000);
+    toast('File ' + namaFile + ' diunduh.');
+  }
+
+  function bangunTabel(tabel, kepala, baris, kosong) {
+    tabel.textContent = '';
+    var thead = el('thead'), tr = el('tr');
+    kepala.forEach(function (h) { tr.appendChild(el('th', null, h)); });
+    thead.appendChild(tr);
+    tabel.appendChild(thead);
+    var tb = el('tbody');
+    if (!baris.length) {
+      var t0 = el('tr'), td0 = el('td', null, kosong);
+      td0.colSpan = kepala.length; td0.style.textAlign = 'center'; td0.style.color = '#64748b';
+      t0.appendChild(td0); tb.appendChild(t0);
+    }
+    baris.forEach(function (cells) {
+      var t = el('tr');
+      cells.forEach(function (c) {
+        var td = el('td');
+        if (c && c.nodeType) td.appendChild(c);
+        else td.textContent = (c === null || c === undefined) ? '' : String(c);
+        t.appendChild(td);
+      });
+      tb.appendChild(t);
+    });
+    tabel.appendChild(tb);
+  }
+  function selNama(nama, sub) {
+    var d = el('div');
+    d.appendChild(el('b', null, nama));
+    if (sub) d.appendChild(el('div', 'meta', sub));
+    return d;
+  }
+  function tombolKecil(teks, fn) {
+    var b = el('button', 'btn kecil garis', teks);
+    b.type = 'button';
+    b.addEventListener('click', fn);
+    return b;
+  }
+  function tautanPeta(teks, lat, lng) {
+    var a = el('a', 'link', teks);
+    a.href = petaUrl(lat, lng); a.target = '_blank'; a.rel = 'noopener noreferrer';
+    return a;
+  }
+
+  function setRentang(p, jenis) {
+    var hari = hariIniIso(), dari = hari, sampai = hari;
+    if (jenis === '7') dari = tambahHari(hari, -6);
+    else if (jenis === 'bulan') dari = hari.slice(0, 8) + '01';
+    else if (jenis === 'lalu') {
+      var y = parseInt(hari.slice(0, 4), 10), m = parseInt(hari.slice(5, 7), 10);
+      dari = new Date(Date.UTC(y, m - 2, 1)).toISOString().slice(0, 10);
+      sampai = new Date(Date.UTC(y, m - 1, 0)).toISOString().slice(0, 10);
+    }
+    $(p + 'Dari').value = dari;
+    $(p + 'Sampai').value = sampai;
+  }
+
+  function pilihTab(nama) {
+    var tombol = $('tabAdmin').getElementsByTagName('button');
+    for (var i = 0; i < tombol.length; i++) {
+      tombol[i].className = (tombol[i].getAttribute('data-tab') === nama) ? 'aktif' : '';
+    }
+    $('paneHariini').hidden = (nama !== 'hariini');
+    $('paneData').hidden = (nama !== 'data');
+    $('paneRekap').hidden = (nama !== 'rekap');
+    $('paneKaryawan').hidden = (nama !== 'karyawan');
+    if (nama === 'hariini' && !adm.hari) muatHariIni();
+    if (nama === 'data' && !adm.data) muatData();
+    if (nama === 'rekap' && !adm.rekap) muatRekap();
+  }
+  $('tabAdmin').addEventListener('click', function (e) {
+    var b = e.target.closest ? e.target.closest('button') : null;
+    if (b) pilihTab(b.getAttribute('data-tab'));
+  });
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest ? e.target.closest('[data-pre]') : null;
+    if (!b) return;
+    var p = b.parentNode.getAttribute('data-p');
+    setRentang(p, b.getAttribute('data-pre'));
+    if (p === 'd') muatData(); else muatRekap();
+  });
+
+  function adminMulai() {
+    adm = { hari: null, data: null, rekap: null };
+    cacheFoto = {};
+    $('hTgl').value = hariIniIso();
+    setRentang('d', 'hari');
+    setRentang('r', 'bulan');
+    $('dCari').value = '';
+    pilihTab('hariini');
+  }
+
+  /* -- Hari ini -- */
+  function muatHariIni() {
+    sibukTombol('btnHariIni', true, 'Memuat…');
+    panggil('apiAdminKehadiran', [tokenSaatIni(), $('hTgl').value || hariIniIso()], function (res) {
+      sibukTombol('btnHariIni', false);
+      if (sesiBermasalah(res)) return;
+      if (!res || !res.ok) { toast((res && res.pesan) || 'Gagal memuat kehadiran.'); return; }
+      adm.hari = res;
+      renderHariIni();
+    }, function () { sibukTombol('btnHariIni', false); toast('Tidak dapat terhubung ke server.'); });
+  }
+  $('btnHariIni').addEventListener('click', muatHariIni);
+  $('hTgl').addEventListener('change', muatHariIni);
+  $('hFilter').addEventListener('change', function () { renderHariIni(); });
+
+  function renderHariIni() {
+    var d = adm.hari;
+    if (!d) return;
+    var s = $('hStat');
+    s.textContent = '';
+    [['Total', d.hitung.total], ['Belum absen', d.hitung.belum], ['Bekerja', d.hitung.bekerja], ['Selesai', d.hitung.selesai]].forEach(function (x) {
+      var b = el('div');
+      b.appendChild(el('b', null, x[1]));
+      b.appendChild(el('small', null, x[0]));
+      s.appendChild(b);
+    });
+    var f = $('hFilter').value;
+    var label = { BELUM: ['Belum absen', 'merah'], BEKERJA: ['Bekerja', 'biru'], SELESAI: ['Selesai', 'hijau'] };
+    var baris = d.baris.filter(function (b) { return f === 'SEMUA' || b.kategori === f; }).map(function (b) {
+      var pill = el('span', 'pill ' + label[b.kategori][1], b.kategori === 'SELESAI' && b.status === 'LUPA PULANG' ? 'Lupa pulang' : label[b.kategori][0]);
+      return [
+        selNama(b.nama, b.jabatan), b.idKar,
+        b.jamMasuk ? waktuTampil(b.jamMasuk, d.tanggal) : '-',
+        b.jamPulang ? waktuTampil(b.jamPulang, d.tanggal) : '-',
+        pill
+      ];
+    });
+    bangunTabel($('hTabel'), ['Nama', 'ID', 'Masuk', 'Pulang', 'Status'], baris, 'Tidak ada karyawan pada pilihan ini.');
+  }
+
+  /* -- Data absensi -- */
+  function muatData() {
+    sibukTombol('btnData', true, 'Memuat…');
+    panggil('apiAdminAbsensi', [tokenSaatIni(), $('dDari').value, $('dSampai').value, $('dCari').value], function (res) {
+      sibukTombol('btnData', false);
+      if (sesiBermasalah(res)) return;
+      if (!res || !res.ok) { toast((res && res.pesan) || 'Gagal memuat data.'); return; }
+      adm.data = res;
+      renderData();
+    }, function () { sibukTombol('btnData', false); toast('Tidak dapat terhubung ke server.'); });
+  }
+  $('btnData').addEventListener('click', muatData);
+  $('dCari').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); muatData(); } });
+
+  function jarakTeks(b) {
+    return (angka(b.jarakMasuk) ? fmtJarak(b.jarakMasuk) : '-') + ' / ' + (angka(b.jarakPulang) ? fmtJarak(b.jarakPulang) : '-');
+  }
+
+  function renderData() {
+    var d = adm.data;
+    if (!d) return;
+    $('dInfo').textContent = d.total + ' data' + (d.terpotong ? ' (hanya ' + d.baris.length + ' terbaru yang ditampilkan, persempit rentang tanggal)' : '');
+    $('btnDataCsv').disabled = !d.baris.length;
+    var baris = d.baris.map(function (b) {
+      var aksi = el('div', 'aksi-sel');
+      if (b.fotoMasuk) aksi.appendChild(tombolKecil('Foto masuk', function () { lihatFoto(b, 'MASUK'); }));
+      if (b.fotoPulang) aksi.appendChild(tombolKecil('Foto pulang', function () { lihatFoto(b, 'PULANG'); }));
+      if (petaUrl(b.latMasuk, b.lngMasuk)) aksi.appendChild(tautanPeta('Peta masuk', b.latMasuk, b.lngMasuk));
+      if (petaUrl(b.latPulang, b.lngPulang)) aksi.appendChild(tautanPeta('Peta pulang', b.latPulang, b.lngPulang));
+      return [
+        tglTampil(b.tanggal), selNama(b.nama, b.idKar),
+        b.jamMasuk ? waktuTampil(b.jamMasuk, b.tanggal) : '-',
+        b.jamPulang ? waktuTampil(b.jamPulang, b.tanggal) : '-',
+        fmtDurasi(b.menit), el('span', 'pill ' + kelasStatus(b.status), b.status),
+        jarakTeks(b), aksi
+      ];
+    });
+    bangunTabel($('dTabel'), ['Tanggal', 'Nama', 'Masuk', 'Pulang', 'Durasi', 'Status', 'Jarak (M / P)', 'Foto & Lokasi'], baris, 'Tidak ada data pada rentang ini.');
+  }
+
+  $('btnDataCsv').addEventListener('click', function () {
+    var d = adm.data;
+    if (!d || !d.baris.length) return;
+    var rows = [['Tanggal', 'ID', 'Nama', 'Jam Masuk', 'Jam Pulang', 'Durasi (menit)', 'Durasi', 'Status',
+                 'Jarak Masuk (m)', 'Jarak Pulang (m)', 'Peta Masuk', 'Peta Pulang', 'Keterangan']];
+    d.baris.slice().reverse().forEach(function (b) {
+      rows.push([b.tanggal, b.idKar, b.nama, b.jamMasuk, b.jamPulang,
+                 angka(b.menit) ? b.menit : '', fmtDurasi(b.menit), b.status,
+                 angka(b.jarakMasuk) ? b.jarakMasuk : '', angka(b.jarakPulang) ? b.jarakPulang : '',
+                 petaUrl(b.latMasuk, b.lngMasuk), petaUrl(b.latPulang, b.lngPulang), b.ket]);
+    });
+    unduhCsv('absensi_' + d.dari + '_' + d.sampai + '.csv', rows);
+  });
+
+  /* -- Rekap -- */
+  function muatRekap() {
+    sibukTombol('btnRekap', true, 'Memuat…');
+    panggil('apiAdminRekap', [tokenSaatIni(), $('rDari').value, $('rSampai').value], function (res) {
+      sibukTombol('btnRekap', false);
+      if (sesiBermasalah(res)) return;
+      if (!res || !res.ok) { toast((res && res.pesan) || 'Gagal memuat rekap.'); return; }
+      adm.rekap = res;
+      renderRekap();
+    }, function () { sibukTombol('btnRekap', false); toast('Tidak dapat terhubung ke server.'); });
+  }
+  $('btnRekap').addEventListener('click', muatRekap);
+
+  function renderRekap() {
+    var d = adm.rekap;
+    if (!d) return;
+    $('rInfo').textContent = tglTampil(d.dari) + ' – ' + tglTampil(d.sampai) + ' (' + d.hari + ' hari)';
+    $('btnRekapCsv').disabled = !d.baris.length;
+    var baris = d.baris.map(function (b) {
+      return [selNama(b.nama, b.idKar), b.hadir, b.lengkap, b.lupa, fmtDurasi(b.menit), b.lengkap ? fmtDurasi(b.rata) : '-'];
+    });
+    bangunTabel($('rTabel'), ['Nama', 'Hadir', 'Selesai', 'Lupa pulang', 'Total jam kerja', 'Rata-rata / hari'], baris, 'Belum ada karyawan.');
+  }
+
+  $('btnRekapCsv').addEventListener('click', function () {
+    var d = adm.rekap;
+    if (!d || !d.baris.length) return;
+    var rows = [['ID', 'Nama', 'Hadir', 'Selesai', 'Lupa Pulang', 'Total Menit', 'Total Jam Kerja', 'Rata-rata Menit per Hari']];
+    d.baris.forEach(function (b) {
+      rows.push([b.idKar, b.nama, b.hadir, b.lengkap, b.lupa, b.menit, fmtDurasi(b.menit), b.rata]);
+    });
+    unduhCsv('rekap_' + d.dari + '_' + d.sampai + '.csv', rows);
+  });
+
+  /* -- Foto -- */
+  function lihatFoto(b, jenis) {
+    var kunci = b.id + '|' + jenis;
+    fotoKunci = kunci;
+    $('fotoJudul').textContent = 'Foto ' + (jenis === 'MASUK' ? 'Masuk' : 'Pulang') + ' • ' + b.nama;
+    $('fotoImg').hidden = true;
+    $('fotoPesan').hidden = false; $('fotoPesan').textContent = 'Memuat foto…';
+    $('fotoInfo').textContent = ''; $('fotoPeta').hidden = true;
+    buka('mFoto');
+    if (cacheFoto[kunci]) { tampilFoto(cacheFoto[kunci]); return; }
+    panggil('apiAdminFoto', [tokenSaatIni(), b.id, jenis], function (res) {
+      if (sesiBermasalah(res)) return;
+      if (!res || !res.ok) {
+        if (fotoKunci === kunci) $('fotoPesan').textContent = (res && res.pesan) || 'Foto tidak dapat dimuat.';
+        return;
+      }
+      if (Object.keys(cacheFoto).length > 40) cacheFoto = {};
+      cacheFoto[kunci] = res;
+      if (fotoKunci === kunci) tampilFoto(res);
+    }, function () {
+      if (fotoKunci === kunci) $('fotoPesan').textContent = 'Tidak dapat terhubung ke server.';
+    });
+  }
+  function tampilFoto(res) {
+    $('fotoImg').src = res.dataUrl;
+    $('fotoImg').hidden = false;
+    $('fotoPesan').hidden = true;
+    $('fotoInfo').textContent = res.nama + ' (' + res.idKar + ') • ' + tglTampil(res.waktu.slice(0, 10)) + ' ' +
+      res.waktu.slice(11, 19) + ' WIB' + (angka(res.jarak) ? ' • jarak ' + fmtJarak(res.jarak) : '');
+    var u = petaUrl(res.lat, res.lng);
+    if (u) { $('fotoPeta').href = u; $('fotoPeta').hidden = false; }
+  }
+
   /* ---------- Pemulihan sesi saat dibuka / refresh ---------- */
   function mulai() {
     var s = bacaSesi();
