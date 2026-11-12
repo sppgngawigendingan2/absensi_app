@@ -1334,6 +1334,8 @@
     $('paneData').hidden = (nama !== 'data');
     $('paneRekap').hidden = (nama !== 'rekap');
     $('paneKaryawan').hidden = (nama !== 'karyawan');
+    $('paneLibur').hidden = (nama !== 'libur');
+    if (nama === 'libur' && !adm.libur) muatLibur();
     if (nama === 'hariini' && !adm.hari) muatHariIni();
     if (nama === 'data' && !adm.data) muatData();
     if (nama === 'rekap' && !adm.rekap) muatRekap();
@@ -1521,6 +1523,65 @@
     if (u) { $('fotoPeta').href = u; $('fotoPeta').hidden = false; }
   }
 
+  /* -- Hari libur (tanggal merah) -- */
+  var NAMA_HARI = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+
+  function muatLibur() {
+    panggil('apiAdminLiburDaftar', [tokenSaatIni()], function (res) {
+      if (sesiBermasalah(res)) return;
+      if (!res || !res.ok) { toast((res && res.pesan) || 'Gagal memuat daftar libur.'); return; }
+      adm.libur = res;
+      renderLibur();
+    }, function () { toast('Tidak dapat terhubung ke server.'); });
+  }
+
+  function renderLibur() {
+    var d = adm.libur;
+    if (!d) return;
+    var hari = hariIniIso();
+    $('ringkasLibur').textContent = d.daftar.length + ' tanggal';
+    var baris = d.daftar.map(function (x) {
+      var lewat = x.tanggal < hari;
+      var dow = new Date(x.tanggal + 'T00:00:00Z').getUTCDay();
+      function sel(t) { return lewat ? el('span', 'meta', t) : t; }
+      return [
+        sel(tglTampil(x.tanggal)), sel(NAMA_HARI[dow]), sel(x.ket), sel(x.jenis),
+        tombolKecil('Hapus', function () { hapusLibur(x); })
+      ];
+    });
+    bangunTabel($('lTabel'), ['Tanggal', 'Hari', 'Keterangan', 'Jenis', ''], baris, 'Belum ada tanggal libur.');
+  }
+
+  function hapusLibur(x) {
+    konfirmasi('Hapus hari libur', 'Hapus "' + x.ket + '" (' + tglTampil(x.tanggal) + ') dari daftar libur? Tanggal itu akan dihitung sebagai hari kerja biasa.', 'Hapus', function () {
+      panggil('apiAdminLiburHapus', [tokenSaatIni(), x.tanggal], function (res) {
+        if (sesiBermasalah(res)) return;
+        if (!res || !res.ok) { toast((res && res.pesan) || 'Gagal menghapus.'); return; }
+        toast('Tanggal libur dihapus.');
+        muatLibur();
+      }, function () { toast('Tidak dapat terhubung ke server.'); });
+    });
+  }
+
+  $('formLibur').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var tgl = $('lTgl').value, ket = $('lKet').value.trim();
+    if (!tgl || !ket) { pesanEl('pesanLibur', 'Tanggal dan keterangan wajib diisi.'); return; }
+    pesanEl('pesanLibur', '');
+    sibukTombol('btnTambahLibur', true, 'Menyimpan…');
+    panggil('apiAdminLiburTambah', [tokenSaatIni(), tgl, ket, $('lJenis').value], function (res) {
+      sibukTombol('btnTambahLibur', false);
+      if (sesiBermasalah(res)) return;
+      if (!res || !res.ok) { pesanEl('pesanLibur', (res && res.pesan) || 'Gagal menyimpan.'); return; }
+      $('lKet').value = '';
+      toast(res.diperbarui ? 'Tanggal libur diperbarui.' : 'Tanggal libur ditambahkan.');
+      muatLibur();
+    }, function () {
+      sibukTombol('btnTambahLibur', false);
+      pesanEl('pesanLibur', 'Tidak dapat terhubung ke server.');
+    });
+  });
+  
   /* ---------- Pemulihan sesi saat dibuka / refresh ---------- */
   function mulai() {
     var s = bacaSesi();
