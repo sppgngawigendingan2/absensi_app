@@ -1379,7 +1379,7 @@
         pill
       ];
     });
-    bangunTabel($('hTabel'), ['Nama', 'ID', 'Masuk', 'Pulang', 'Status'], baris, 'Tidak ada karyawan pada pilihan ini.');
+    bangunTabel($('hTabel'), ['Nama', 'ID', 'Masuk', 'Pulang', 'Status'], baris, d.libur ? 'Hari libur: tidak ada kewajiban absen.' : 'Tidak ada karyawan pada pilihan ini.');
   }
 
   /* -- Data absensi -- */
@@ -1452,7 +1452,7 @@
   function renderRekap() {
     var d = adm.rekap;
     if (!d) return;
-    $('rInfo').textContent = tglTampil(d.dari) + ' – ' + tglTampil(d.sampai) + ' (' + d.hari + ' hari)';
+    $('rInfo').textContent = tglTampil(d.dari) + ' – ' + tglTampil(d.sampai) + ' (' + d.hari + ' hari, ' + d.hariKerja + ' hari kerja)';
     $('btnRekapCsv').disabled = !d.baris.length;
     var baris = d.baris.map(function (b) {
       return [selNama(b.nama, b.idKar), b.hadir, b.lengkap, b.lupa, fmtDurasi(b.menit), b.lengkap ? fmtDurasi(b.rata) : '-'];
