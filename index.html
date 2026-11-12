@@ -243,6 +243,7 @@
         <button type="button" data-tab="data">Data Absensi</button>
         <button type="button" data-tab="rekap">Rekap</button>
         <button type="button" data-tab="karyawan">Karyawan</button>
+        <button type="button" data-tab="libur">Libur</button>
       </div>
 
       <div id="paneHariini">
@@ -310,6 +311,23 @@
         </div>
         <input id="cariKar" type="search" placeholder="Cari nama atau ID" autocomplete="off" style="margin-top:12px">
         <div id="daftarKar" style="margin-top:6px"></div>
+      </div>
+          <div id="paneLibur" hidden>
+        <div class="judulbaris"><p class="judul">Hari Libur (Tanggal Merah)</p><span class="meta" id="ringkasLibur"></span></div>
+        <form id="formLibur" class="filter" novalidate>
+          <div><label for="lTgl">Tanggal</label><input id="lTgl" type="date"></div>
+          <div><label for="lKet">Keterangan</label><input id="lKet" type="text" maxlength="60" placeholder="Contoh: Hari Raya Natal" autocomplete="off"></div>
+          <div><label for="lJenis">Jenis</label>
+            <select id="lJenis">
+              <option value="LIBUR NASIONAL">Libur nasional</option>
+              <option value="CUTI BERSAMA">Cuti bersama</option>
+              <option value="LAINNYA">Lainnya</option>
+            </select></div>
+          <div style="flex:0 0 auto"><button class="btn kecil" id="btnTambahLibur" type="submit">Simpan</button></div>
+        </form>
+        <div id="pesanLibur" class="pesan galat" hidden></div>
+        <div class="tabelbox" style="margin-top:12px"><table class="tabel" id="lTabel"></table></div>
+        <p class="catatan">Pada tanggal libur, absen masuk ditutup dan karyawan tidak dihitung belum absen. Absen pulang untuk shift yang sudah berjalan tetap bisa. Menyimpan tanggal yang sudah ada akan memperbarui keterangannya.</p>
       </div>
     </section>
 
