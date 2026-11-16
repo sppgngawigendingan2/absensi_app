@@ -1420,6 +1420,17 @@
     return (angka(b.jarakMasuk) ? fmtJarak(b.jarakMasuk) : '-') + ' / ' + (angka(b.jarakPulang) ? fmtJarak(b.jarakPulang) : '-');
   }
 
+    function selStatus(b) {
+    var d = el('div');
+    d.appendChild(el('span', 'pill ' + kelasStatus(b.status), b.status));
+    if (String(b.ket || '').indexOf('DI LUAR JAM') >= 0) {
+      var p = el('span', 'pill merah', 'Di luar jam');
+      p.style.marginLeft = '6px';
+      d.appendChild(p);
+    }
+    return d;
+  }
+  
   function renderData() {
     var d = adm.data;
     if (!d) return;
@@ -1435,7 +1446,7 @@
         tglTampil(b.tanggal), selNama(b.nama, b.idKar),
         b.jamMasuk ? waktuTampil(b.jamMasuk, b.tanggal) : '-',
         b.jamPulang ? waktuTampil(b.jamPulang, b.tanggal) : '-',
-        fmtDurasi(b.menit), el('span', 'pill ' + kelasStatus(b.status), b.status),
+                fmtDurasi(b.menit), selStatus(b),
         jarakTeks(b), aksi
       ];
     });
